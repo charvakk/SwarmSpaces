@@ -58,6 +58,10 @@ public:
 
    bool In2Range(CSwarmTuple const &tuple) const;
 
+   bool In3Range(CSwarmTuple const &tuple) const;
+
+   bool In4Range(CSwarmTuple const &tuple) const;
+
    /*
     * Sends a single tuple through the range and bearing actuator.
     */

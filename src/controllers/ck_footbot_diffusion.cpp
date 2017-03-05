@@ -108,12 +108,11 @@ void CFootBotDiffusion::ControlStep() {
 	}
 
 	// check if you receive anything
-	bool received = false;
 	try{
 		CSwarmTuple tuple = receiveTuple();
-		received = true;
-		swarmSpace.write(tuple);
-	}catch (int &a){received = false;}
+		if(In3Range(tuple))
+			swarmSpace.write(tuple);
+	}catch (int &a){}
 
 	
 	/*// if you receive a tuple
@@ -205,6 +204,22 @@ bool CFootBotDiffusion::InRange(CSwarmTuple const &tuple) const{
 
 bool CFootBotDiffusion::In2Range(CSwarmTuple const &tuple) const{
 	if(DistanceFrom(tuple.getVfPosition().GetX(), tuple.getVfPosition().GetY()) <= 2*tuple.getFRange()){
+		return true;
+	}else{
+		return false;
+	}
+}
+
+bool CFootBotDiffusion::In3Range(CSwarmTuple const &tuple) const{
+	if(DistanceFrom(tuple.getVfPosition().GetX(), tuple.getVfPosition().GetY()) <= 3*tuple.getFRange()){
+		return true;
+	}else{
+		return false;
+	}
+}
+
+bool CFootBotDiffusion::In4Range(CSwarmTuple const &tuple) const{
+	if(DistanceFrom(tuple.getVfPosition().GetX(), tuple.getVfPosition().GetY()) <= 4*tuple.getFRange()){
 		return true;
 	}else{
 		return false;
