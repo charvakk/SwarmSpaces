@@ -12,4 +12,4 @@ target_link_libraries(ck_footbot_diffusion
   argos3plugin_simulator_footbot
   argos3plugin_simulator_genericrobot
   SwarmSpaces
-  CSwarmTuple)
+  SwarmTuple)

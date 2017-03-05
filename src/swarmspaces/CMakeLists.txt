@@ -9,10 +9,10 @@ target_link_libraries(SwarmSpaces
   argos3core_simulator
   argos3plugin_simulator_footbot
   argos3plugin_simulator_genericrobot
-  CSwarmTuple)
+  SwarmTuple)
 
-add_library(CSwarmTuple MODULE CSwarmTuple.cpp)
-target_link_libraries(CSwarmTuple
+add_library(SwarmTuple MODULE swarmtuple.cpp)
+target_link_libraries(SwarmTuple
   argos3core_simulator
   argos3plugin_simulator_footbot
   argos3plugin_simulator_genericrobot)

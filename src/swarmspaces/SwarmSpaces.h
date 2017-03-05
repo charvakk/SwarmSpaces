@@ -11,7 +11,7 @@
 #include <tr1/unordered_map>
 #include <argos3/core/utility/math/vector2.h>
 #include <argos3/core/utility/configuration/argos_configuration.h>
-#include <swarmspaces/CSwarmTuple.cpp>
+#include <swarmspaces/swarmtuple.cpp>
 
 using namespace std;
 
