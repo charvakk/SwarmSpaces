@@ -14,6 +14,7 @@
 #include <algorithm>
 
 #define MSG_SIZE 100
+#define Rp 2
 bool firstLoop = true;
 
 /****************************************/
@@ -21,19 +22,20 @@ bool firstLoop = true;
 CSwarmTuple tuple1(1, CVector2(0.0, 0.0), 0.5, "First Tuple!");
 
 CFootBotDiffusion::CFootBotDiffusion() :
-m_pcWheels(NULL),
-m_pcProximity(NULL),
-m_cAlpha(10.0f),
-m_fDelta(0.5f),                 //0.5f for gas particle simulation
-m_fWheelVelocity(2.5f),
-positionSensor(NULL),
-ledActuator(NULL),
-swarmSpace(),
-currentPosition(),
-RABA(NULL),
-RABS(NULL),
-m_cGoStraightAngleRange(-ToRadians(m_cAlpha),
-		ToRadians(m_cAlpha)) {}
+				m_pcWheels(NULL),
+				m_pcProximity(NULL),
+				m_cAlpha(10.0f),
+				m_fDelta(0.5f),                 //0.5f for gas particle simulation
+				m_fWheelVelocity(2.5f),
+				positionSensor(NULL),
+				ledActuator(NULL),
+				swarmSpace(),
+				invisibleSpace(),
+				currentPosition(),
+				RABA(NULL),
+				RABS(NULL),
+				m_cGoStraightAngleRange(-ToRadians(m_cAlpha),
+						ToRadians(m_cAlpha)) {}
 
 
 /****************************************/
@@ -99,7 +101,7 @@ void CFootBotDiffusion::ControlStep() {
 	if(firstLoop && id == "fb1" && InTupleRange(tuple1)){
 		firstLoop = false;
 		try{
-			swarmSpace.read(tuple1.getIId());
+			swarmSpace.read(tuple1.getId());
 		}catch(int e){
 			swarmSpace.write(tuple1);
 			bool sent = sendTuple(tuple1);
@@ -107,48 +109,53 @@ void CFootBotDiffusion::ControlStep() {
 		}
 	}
 
+
 	// check if you receive anything
 	try{
 		CSwarmTuple tuple = receiveTuple();
-		if(InPropagationRange(tuple, 3.0))
+		if(InTupleRange(tuple))
 			swarmSpace.write(tuple);
+		else if(InPropagationRange(tuple, Rp))
+			invisibleSpace.write(tuple);
 	}catch (int &a){}
 
-	
-	/*// if you receive a tuple
-	if(received){
-		LOG << "got one" << endl;
-		// if you're in range, add the tuple to SS and send to neighbors
-		if(InRange(tuple)){
-			swarmSpace.write(tuple);
-			bool sent = sendTuple(tuple);
-			LOG << "Saving it " << tuple.getSInfo() << endl;
-		}else if(In2Range(tuple)){	// if not in range but in 2R, don't add to SS but send to neighbors
-			bool sent = sendTuple(tuple);
-			LOG << "passing it on " << tuple.getSInfo() << endl;
-		}	// if out of 2R, do nothing
-		else{
-			RABA->ClearData();
-		}
-	}*/
 
 	// If you have a tuple, send it to neighbors
-	if(swarmSpace.size() == 0){
-		RABA->ClearData();
-	}else{
+	if(swarmSpace.size() != 0){
 		CSwarmTuple whatIhave = swarmSpace.read(swarmSpace.getIDs().at(0));
 		bool sent = sendTuple(whatIhave);
-		// LOG << "sending what i have" << endl;
-	}
+	}else if(invisibleSpace.size() != 0){
+		CSwarmTuple whatIhave = invisibleSpace.read(invisibleSpace.getIDs().at(0));
+		bool sent = sendTuple(whatIhave);
+	}else
+		RABA->ClearData();
+
 
 	//Check all tuples and delete ones not in range
 	vector<CSwarmTuple> tuples = swarmSpace.getAllTuples();
 	for(CSwarmTuple t : tuples){
-		if(!InRange(t)){
-			swarmSpace.remove(t.getIId());
-			// LOG << "tuple deleted" << endl;
+		if(!InTupleRange(t) && InPropagationRange(t, Rp)){
+			invisibleSpace.write(t);
+			swarmSpace.remove(t.getId());
+			LOG << "tuple shifted to second" << endl;
+		}else if(!InPropagationRange(t, Rp)){
+			swarmSpace.remove(t.getId());
+			LOG << "tuple deleted" << endl;
 		}
 	}
+
+	vector<CSwarmTuple> invisibleTuples = invisibleSpace.getAllTuples();
+	for(CSwarmTuple t : invisibleTuples){
+		if(InTupleRange(t)){
+			swarmSpace.write(t);
+			invisibleSpace.remove(t.getId());
+			LOG << "tuple shifted to first" << endl;
+		}else if(!InPropagationRange(t, Rp)){
+			invisibleSpace.remove(t.getId());
+			LOG << "tuple deleted" << endl;
+		}
+	}
+
 
 	// if you have the tuple, LED red
 	std::vector<int> ids = swarmSpace.getIDs();
@@ -205,7 +212,7 @@ bool CFootBotDiffusion::InPropagationRange(CSwarmTuple const &tuple, float multi
 
 bool CFootBotDiffusion::sendTuple(CSwarmTuple &tuple){
 	CByteArray byteArray;
-	byteArray << tuple.getIId() << tuple.getVfPosition().GetX() << tuple.getVfPosition().GetY() << tuple.getFRange() << tuple.getSInfo();
+	byteArray << tuple.getId() << tuple.getVfPosition().GetX() << tuple.getVfPosition().GetY() << tuple.getFRange() << tuple.getSInfo();
 
 	size_t arraySize = byteArray.Size();
 	for(size_t i = 0; i < MSG_SIZE-arraySize; i++) byteArray << static_cast<UInt8>(0);

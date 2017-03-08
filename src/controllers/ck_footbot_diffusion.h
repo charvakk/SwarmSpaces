@@ -127,6 +127,8 @@ private:
 
    SwarmSpaces swarmSpace;
 
+   SwarmSpaces invisibleSpace;
+
    CVector2 currentPosition;
 };
 
