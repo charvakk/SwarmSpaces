@@ -114,27 +114,28 @@ void CFootBotDiffusion::ControlStep() {
 
 	// check if you receive anything
 	try{
-		CSwarmTuple tuple = receiveTuple();
-		if(InTupleRange(tuple))
-			swarmSpace.write(tuple);
-		else if(InPropagationRange(tuple, Rp))
-			invisibleSpace.write(tuple);
-	}catch (int &a){}
+		vector<CSwarmTuple> tuples = GetTuplesFromRABS();
+		for(CSwarmTuple tuple : tuples){
+			if(InTupleRange(tuple))
+				swarmSpace.write(tuple);
+			else if(InPropagationRange(tuple, Rp))
+				invisibleSpace.write(tuple);
+		}
+	}catch(int &a){}
+
+	// Get all tuples for sending and deleting operations
+	vector<CSwarmTuple> tuples = swarmSpace.getAllTuples();
+	vector<CSwarmTuple> invisibleTuples = invisibleSpace.getAllTuples();
 
 
-	// If you have a tuple, send it to neighbors
-	if(swarmSpace.size() != 0){
-		CSwarmTuple whatIhave = swarmSpace.read(swarmSpace.getIDs().at(0));
-		bool sent = sendTuple(whatIhave);
-	}else if(invisibleSpace.size() != 0){
-		CSwarmTuple whatIhave = invisibleSpace.read(invisibleSpace.getIDs().at(0));
-		bool sent = sendTuple(whatIhave);
+	// Send all your tuples to neighbors
+	if(swarmSpace.size() != 0 || invisibleSpace.size() != 0){
+		bool sent = SendTuplesToRABA(tuples, invisibleTuples);
 	}else
 		RABA->ClearData();
 
 
 	//Check all tuples and delete ones not in range
-	vector<CSwarmTuple> tuples = swarmSpace.getAllTuples();
 	for(CSwarmTuple t : tuples){
 		if(!InTupleRange(t) && InPropagationRange(t, Rp)){
 			invisibleSpace.write(t);
@@ -145,8 +146,6 @@ void CFootBotDiffusion::ControlStep() {
 			LOG << "tuple deleted" << endl;
 		}
 	}
-
-	vector<CSwarmTuple> invisibleTuples = invisibleSpace.getAllTuples();
 	for(CSwarmTuple t : invisibleTuples){
 		if(InTupleRange(t)){
 			swarmSpace.write(t);
@@ -161,11 +160,12 @@ void CFootBotDiffusion::ControlStep() {
 
 	// if you have the tuple, LED red
 	std::vector<int> ids = swarmSpace.getIDs();
-	if(std::find(ids.begin(), ids.end(), 1) != ids.end()){
+	if(std::find(ids.begin(), ids.end(), 1) != ids.end())
 		ledActuator->SetAllColors(CColor::RED);
-	}else{
+	if(std::find(ids.begin(), ids.end(), 2) != ids.end())
+			ledActuator->SetAllColors(CColor::YELLOW);
+	else
 		ledActuator->SetAllColors(CColor::BLUE);
-	}
 }
 
 void CFootBotDiffusion::ObstacleAvoidance() {
@@ -265,6 +265,26 @@ bool CFootBotDiffusion::SendTuplesToRABA(vector<CSwarmTuple> const &tuples){
 	}
 }
 
+bool CFootBotDiffusion::SendTuplesToRABA(vector<CSwarmTuple> const &tuples, vector<CSwarmTuple> const &invisibleTuples){
+	CByteArray byteArray;
+	byteArray << (tuples.size() + invisibleTuples.size());
+	for(CSwarmTuple tuple : tuples)
+		byteArray << tuple.getId() << tuple.getVfPosition().GetX() << tuple.getVfPosition().GetY() << tuple.getFRange() << tuple.getSInfo();
+	for(CSwarmTuple tuple : invisibleTuples)
+		byteArray << tuple.getId() << tuple.getVfPosition().GetX() << tuple.getVfPosition().GetY() << tuple.getFRange() << tuple.getSInfo();
+
+	size_t arraySize = byteArray.Size();	//Save size before loop, array size changes in loop
+	for(size_t i = 0; i < MSG_SIZE-arraySize; i++)
+		byteArray << static_cast<UInt8>(0);
+
+	try{
+		RABA->SetData(byteArray);
+		return true;
+	}catch(exception &e){
+		std::cout << e.what() << std::endl;
+		return false;
+	}
+}
 
 vector<CSwarmTuple> CFootBotDiffusion::GetTuplesFromRABS(){
 	const CCI_RangeAndBearingSensor::TReadings& packets = RABS->GetReadings();

@@ -73,6 +73,8 @@ public:
 
    bool SendTuplesToRABA(vector<CSwarmTuple> const &tuples);
 
+   bool SendTuplesToRABA(vector<CSwarmTuple> const &tuples, vector<CSwarmTuple> const &invisibleTuples);
+
 
    /*
     * This function resets the controller to its state right after the
