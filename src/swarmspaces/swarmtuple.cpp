@@ -20,13 +20,13 @@ class CSwarmTuple{
 public:
 
 	CSwarmTuple(){
-		m_iID = 0;
+		m_sID = 0;
 		m_fRange = 0;
 		m_vfPosition = CVector2(1000.0, 1000.0);
 	}
 
 	CSwarmTuple(int id, CVector2 position, Real range, string info){
-		m_iID = id;
+		m_sID = id;
 		m_vfPosition = position;
 		m_fRange = range;
 		m_sInfo = info;
@@ -56,14 +56,14 @@ public:
 		m_vfPosition = vfPosition;
 	}
 
-	int getIId() const {
-		return m_iID;
+	int getId() const {
+		return m_sID;
 	}
 
 private:
 	static int instanceCounter;
 	CVector2 m_vfPosition;
-	int m_iID;
+	short m_sID;
 	Real m_fRange;
 	string m_sInfo;
 
