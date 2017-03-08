@@ -96,7 +96,7 @@ void CFootBotDiffusion::ControlStep() {
 	currentPosition.SetY(positionReading.Position.GetY());
 
 
-	if(firstLoop && id == "fb1" && InRange(tuple1)){
+	if(firstLoop && id == "fb1" && InTupleRange(tuple1)){
 		firstLoop = false;
 		try{
 			swarmSpace.read(tuple1.getIId());
@@ -110,7 +110,7 @@ void CFootBotDiffusion::ControlStep() {
 	// check if you receive anything
 	try{
 		CSwarmTuple tuple = receiveTuple();
-		if(In3Range(tuple))
+		if(InPropagationRange(tuple, 3.0))
 			swarmSpace.write(tuple);
 	}catch (int &a){}
 
@@ -194,36 +194,13 @@ Real CFootBotDiffusion::DistanceFrom(Real const x, Real const y) const{
 	return sqrt(pow(dx,2) + pow(dy,2));
 }
 
-bool CFootBotDiffusion::InRange(CSwarmTuple const &tuple) const{
-	if(DistanceFrom(tuple.getVfPosition().GetX(), tuple.getVfPosition().GetY()) <= tuple.getFRange()){
-		return true;
-	}else{
-		return false;
-	}
+bool CFootBotDiffusion::InTupleRange(CSwarmTuple const &tuple) const{
+	return (DistanceFrom(tuple.getVfPosition().GetX(), tuple.getVfPosition().GetY()) <= tuple.getFRange());
 }
 
-bool CFootBotDiffusion::In2Range(CSwarmTuple const &tuple) const{
-	if(DistanceFrom(tuple.getVfPosition().GetX(), tuple.getVfPosition().GetY()) <= 2*tuple.getFRange()){
-		return true;
-	}else{
-		return false;
-	}
-}
+bool CFootBotDiffusion::InPropagationRange(CSwarmTuple const &tuple, float multiplier) const{
+	return (DistanceFrom(tuple.getVfPosition().GetX(), tuple.getVfPosition().GetY()) <= multiplier*tuple.getFRange());
 
-bool CFootBotDiffusion::In3Range(CSwarmTuple const &tuple) const{
-	if(DistanceFrom(tuple.getVfPosition().GetX(), tuple.getVfPosition().GetY()) <= 3*tuple.getFRange()){
-		return true;
-	}else{
-		return false;
-	}
-}
-
-bool CFootBotDiffusion::In4Range(CSwarmTuple const &tuple) const{
-	if(DistanceFrom(tuple.getVfPosition().GetX(), tuple.getVfPosition().GetY()) <= 4*tuple.getFRange()){
-		return true;
-	}else{
-		return false;
-	}
 }
 
 bool CFootBotDiffusion::sendTuple(CSwarmTuple &tuple){

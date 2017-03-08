@@ -54,13 +54,9 @@ public:
    
    virtual Real DistanceFrom(Real const x, Real const y) const;
 
-   bool InRange(CSwarmTuple const &tuple) const;
+   bool InTupleRange(CSwarmTuple const &tuple) const;
 
-   bool In2Range(CSwarmTuple const &tuple) const;
-
-   bool In3Range(CSwarmTuple const &tuple) const;
-
-   bool In4Range(CSwarmTuple const &tuple) const;
+   bool InPropagationRange(CSwarmTuple const &tuple, float multiplier) const;
 
    /*
     * Sends a single tuple through the range and bearing actuator.
