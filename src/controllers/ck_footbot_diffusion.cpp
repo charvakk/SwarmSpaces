@@ -15,11 +15,13 @@
 
 #define MSG_SIZE 100
 #define Rp 2
-bool firstLoop = true;
 
 /****************************************/
 /****************************************/
 CSwarmTuple tuple1(1, CVector2(0.0, 0.0), 0.5, "First Tuple!");
+CSwarmTuple tuple2(2, CVector2(1.0, 1.0), 0.5, "Second Tuple!");
+bool needToCreateFirst = true;
+bool needToCreateSecond = true;
 
 CFootBotDiffusion::CFootBotDiffusion() :
 				m_pcWheels(NULL),
@@ -98,15 +100,15 @@ void CFootBotDiffusion::ControlStep() {
 	currentPosition.SetY(positionReading.Position.GetY());
 
 
-	if(firstLoop && id == "fb1" && InTupleRange(tuple1)){
-		firstLoop = false;
-		try{
-			swarmSpace.read(tuple1.getId());
-		}catch(int e){
-			swarmSpace.write(tuple1);
-			bool sent = sendTuple(tuple1);
-			LOG << "first tuple written" << endl;
-		}
+	if(needToCreateFirst && id == "fb1" && InTupleRange(tuple1)){
+		needToCreateFirst = false;
+		swarmSpace.write(tuple1);
+		LOG << "first tuple written" << endl;
+	}
+	if(needToCreateSecond && id == "fb2" && InTupleRange(tuple2)){
+		needToCreateSecond = false;
+		swarmSpace.write(tuple2);
+		LOG << "second tuple written" << endl;
 	}
 
 
@@ -210,7 +212,7 @@ bool CFootBotDiffusion::InPropagationRange(CSwarmTuple const &tuple, float multi
 
 }
 
-bool CFootBotDiffusion::sendTuple(CSwarmTuple &tuple){
+bool CFootBotDiffusion::sendTuple(CSwarmTuple const &tuple){
 	CByteArray byteArray;
 	byteArray << tuple.getId() << tuple.getVfPosition().GetX() << tuple.getVfPosition().GetY() << tuple.getFRange() << tuple.getSInfo();
 
@@ -242,10 +244,50 @@ CSwarmTuple CFootBotDiffusion::receiveTuple(){
 		if(info.empty()) throw 1;
 		return tuple;
 	}
-
-
 }
 
+bool CFootBotDiffusion::SendTuplesToRABA(vector<CSwarmTuple> const &tuples){
+	CByteArray byteArray;
+	byteArray << tuples.size();
+	for(CSwarmTuple tuple : tuples)
+		byteArray << tuple.getId() << tuple.getVfPosition().GetX() << tuple.getVfPosition().GetY() << tuple.getFRange() << tuple.getSInfo();
+
+	size_t arraySize = byteArray.Size();	//Save size before loop, array size changes in loop
+	for(size_t i = 0; i < MSG_SIZE-arraySize; i++)
+		byteArray << static_cast<UInt8>(0);
+
+	try{
+		RABA->SetData(byteArray);
+		return true;
+	}catch(exception &e){
+		std::cout << e.what() << std::endl;
+		return false;
+	}
+}
+
+
+vector<CSwarmTuple> CFootBotDiffusion::GetTuplesFromRABS(){
+	const CCI_RangeAndBearingSensor::TReadings& packets = RABS->GetReadings();
+	if(packets.size() == 0 || packets[0].Data.Size() == 0 || (packets[0].Data[0] == 0 && packets[0].Data[25] == 0 && packets[0].Data[50] == 0 && packets[0].Data[70] == 0)) throw 0;
+	else{
+		size_t numberOfTuples;
+		vector<CSwarmTuple> tuples;
+
+		CByteArray byteArray = packets[0].Data;
+		byteArray >> numberOfTuples;
+		for(size_t i = 0; i < numberOfTuples; ++i){
+			int id; CVector2 position; Real range, x, y; string info;
+			byteArray >> id >> x >> y >> range >> info;
+
+			position.SetX(x); position.SetY(y);
+			CSwarmTuple tuple(id, position, range, info);
+			tuples.push_back(tuple);
+		}
+
+//		if(info.empty()) throw 1;
+		return tuples;
+	}
+}
 /****************************************/
 /****************************************/
 

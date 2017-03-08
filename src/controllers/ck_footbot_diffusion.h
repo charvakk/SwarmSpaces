@@ -16,6 +16,7 @@
 #include <swarmspaces/SwarmSpaces.cpp>
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_actuator.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_sensor.h>
+#include <vector>
 
 /*
  * All the ARGoS stuff in the 'argos' namespace.
@@ -61,12 +62,17 @@ public:
    /*
     * Sends a single tuple through the range and bearing actuator.
     */
-   bool sendTuple(CSwarmTuple &tuple);
+   bool sendTuple(CSwarmTuple const &tuple);
 
    /*
 	  * Receives a single tuple from the range and bearing sensor.
     */
    CSwarmTuple receiveTuple();
+
+   vector<CSwarmTuple> GetTuplesFromRABS();
+
+   bool SendTuplesToRABA(vector<CSwarmTuple> const &tuples);
+
 
    /*
     * This function resets the controller to its state right after the
