@@ -23,7 +23,7 @@
  * With this statement, you save typing argos:: every time.
  */
 using namespace argos;
-
+using namespace std;
 /*
  * A controller is simply an implementation of the CCI_Controller class.
  */

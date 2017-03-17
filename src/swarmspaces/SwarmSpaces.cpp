@@ -18,7 +18,9 @@ SwarmSpaces::SwarmSpaces():
 }*/
 
 void SwarmSpaces::write(CSwarmTuple &tuple){
-	space[tuple.getId()] = tuple;
+//	space[tuple.getId()] = tuple;
+	int id = tuple.getId();
+	space.insert({id, tuple});
 }
 
 /*

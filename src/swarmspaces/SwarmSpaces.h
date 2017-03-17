@@ -50,6 +50,7 @@ public:
 private:
 //	tr1::unordered_map<argos::CVector2, string, VectorHash> space;
 	tr1::unordered_map<int, CSwarmTuple> space;
+
 };
 
 
