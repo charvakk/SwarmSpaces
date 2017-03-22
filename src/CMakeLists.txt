@@ -41,3 +41,6 @@ add_subdirectory(controllers)
 
 # Descend into the swarmspaces directory
 add_subdirectory(swarmspaces)
+
+# Descend into the controllers directory
+add_subdirectory(loop_functions)
