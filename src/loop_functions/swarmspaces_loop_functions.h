@@ -2,7 +2,7 @@
 #ifndef SWARMSPACES_LOOP_FUNCTIONS_H
 #define SWARMSPACES_LOOP_FUNCTIONS_H
 
-#include <argos/core/simultor/loop_functions.h>
+#include <argos3/core/simulator/loop_functions.h>
 #include <swarmspaces/swarmtuple.cpp>
 #include <fstream>
 #include <string>
