@@ -3,7 +3,7 @@
 #define SWARMSPACES_LOOP_FUNCTIONS_H
 
 #include <argos3/core/simulator/loop_functions.h>
-#include <swarmspaces/swarmtuple.cpp>
+#include <swarmspaces/swarmtuple.h>
 #include <fstream>
 #include <string>
 

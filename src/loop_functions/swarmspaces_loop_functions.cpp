@@ -1,7 +1,6 @@
 #include "swarmspaces_loop_functions.h"
-#include "ck_footbot_diffusion.h"
-#include "SwarmSpaces.h"
-#include <swarmspaces/swarmtuple.cpp>
+#include "controllers/ck_footbot_diffusion.h"
+#include "swarmspaces/SwarmSpaces.h"
 
 #include <argos3/plugins/simulator/entities/box_entity.h>
 #include <argos3/plugins/robots/foot-bot/simulator/footbot_entity.h>
@@ -14,14 +13,14 @@
 /****************************************/
 
 static const std::string FILE_PREFIX      = "space_";
-static const Real        FB_RADIUS        = 0.085036758f;
-static const Real        FB_AREA          = ARGOS_PI * Square(0.085036758f);
+//static const Real        FB_RADIUS        = 0.085036758f;
+//static const Real        FB_AREA          = ARGOS_PI * Square(0.085036758f);
 static const std::string FB_CONTROLLER    = "fdc";
 static const UInt32      MAX_PLACE_TRIALS = 20;
-static const UInt32      MAX_ROBOT_TRIALS = 20;
+//static const UInt32      MAX_ROBOT_TRIALS = 20;
 static const Real        RAB_RANGE        = 3.0f;
-static const Real        SF_RANGE         = RAB_RANGE / Sqrt(2);
-static const Real        HALF_SF_RANGE    = SF_RANGE * 0.5f;
+//static const Real        SF_RANGE         = RAB_RANGE / Sqrt(2);
+//static const Real        HALF_SF_RANGE    = SF_RANGE * 0.5f;
 static const Real        WALL_THICKNESS   = 0.1;
 static const Real        WALL_HEIGHT      = 2.0;
 
@@ -73,7 +72,7 @@ void CSwarmSpacesLF::Init(TConfigurationNode& t_tree) {
             CFootBotDiffusion& cController = dynamic_cast<CFootBotDiffusion&>(cFootBot.GetControllableEntity().GetController());
             if(isSpawned == false){
             	if(cController.InTupleRange(tuple)){
-            		cController.swarmSpace.write(tuple);
+            		cController.GetSwarmSpaces().write(tuple);
             		isSpawned = true;
             		break;
             	}
@@ -110,7 +109,7 @@ void CSwarmSpacesLF::PostStep() {
 	            /* Get handle to foot-bot entity and controller */
 	            CFootBotEntity& cFootBot = *any_cast<CFootBotEntity*>(it->second);
 	            CFootBotDiffusion& cController = dynamic_cast<CFootBotDiffusion&>(cFootBot.GetControllableEntity().GetController());
-	            size_t aliveCount = cController.swarmSpace.size();
+	            size_t aliveCount = cController.GetSwarmSpaces().size();
 	            tupleCount += aliveCount;
     }
 	if(tupleCount >= 1){

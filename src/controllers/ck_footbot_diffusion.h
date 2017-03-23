@@ -13,7 +13,7 @@
 
 #include <argos3/plugins/robots/generic/control_interface/ci_positioning_sensor.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_leds_actuator.h>
-#include <swarmspaces/SwarmSpaces.cpp>
+#include "swarmspaces/SwarmSpaces.h"
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_actuator.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_sensor.h>
 #include <vector>
@@ -75,7 +75,7 @@ public:
 
    bool SendTuplesToRABA(vector<CSwarmTuple> const &tuples, vector<CSwarmTuple> const &invisibleTuples);
 
-
+   SwarmSpaces GetSwarmSpaces() const;
    /*
     * This function resets the controller to its state right after the
     * Init().

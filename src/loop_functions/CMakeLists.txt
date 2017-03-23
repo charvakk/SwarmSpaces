@@ -11,6 +11,4 @@ add_library(loop_functions MODULE swarmspaces_loop_functions.h swarmspaces_loop_
 target_link_libraries(loop_functions
   argos3core_simulator
   argos3plugin_simulator_footbot
-  argos3plugin_simulator_genericrobot
-  controllers
   )

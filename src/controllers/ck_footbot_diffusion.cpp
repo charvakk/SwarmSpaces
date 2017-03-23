@@ -334,6 +334,10 @@ vector<CSwarmTuple> CFootBotDiffusion::GetTuplesFromRABS(){
 		return tuples;
 	}
 }
+
+SwarmSpaces CFootBotDiffusion::GetSwarmSpaces() const{
+	return swarmSpace;
+}
 /****************************************/
 /****************************************/
 
