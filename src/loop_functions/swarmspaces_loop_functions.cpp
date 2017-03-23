@@ -16,17 +16,13 @@ static const std::string FILE_PREFIX      = "space_";
 static const Real        FB_RADIUS        = 0.085036758f;
 static const Real        FB_AREA          = ARGOS_PI * Square(0.085036758f);
 static const std::string FB_CONTROLLER    = "fdc";
-//static const UInt32      MAX_PLACE_TRIALS = 20;
-//static const UInt32      MAX_ROBOT_TRIALS = 20;
+static const UInt32      MAX_PLACE_TRIALS = 20;
+static const UInt32      MAX_ROBOT_TRIALS = 20;
 static const Real        RAB_RANGE        = 3.0f;
 static const Real        SF_RANGE         = RAB_RANGE / Sqrt(2);
 static const Real        HALF_SF_RANGE    = SF_RANGE * 0.5f;
 static const Real        WALL_THICKNESS   = 0.1;
 static const Real        WALL_HEIGHT      = 2.0;
-
-// Tuple Created
-// Or can this be done in the header file??
-CSwarmTuple tuple(1, CVector2(0.0, 0.0), 0.5, "First Tuple!");
 
 
 /****************************************/
@@ -35,6 +31,7 @@ CSwarmTuple tuple(1, CVector2(0.0, 0.0), 0.5, "First Tuple!");
 CSwarmSpacesLF::CSwarmSpacesLF() :
    m_bDone(false),
    isCheckValid(false),
+   tuple(1, CVector2(0.0, 0.0), 0.5, "First Tuple!"),
    tupleCount(0){
 }
 
@@ -72,7 +69,7 @@ void CSwarmSpacesLF::Init(TConfigurationNode& t_tree) {
            ++it) {
             /* Get handle to foot-bot entity and controller */
             CFootBotEntity& cFootBot = *any_cast<CFootBotEntity*>(it->second);
-            CFootBotForaging& cController = dynamic_cast<CFootBotForaging&>(cFootBot.GetControllableEntity().GetController());
+            CFootBotDiffusion& cController = dynamic_cast<CFootBotDiffusion&>(cFootBot.GetControllableEntity().GetController());
             if(isSpawned == false){
             	if(cController.InTupleRange(tuple)){
             		cController.swarmSpace.write(tuple);
@@ -102,7 +99,7 @@ void CSwarmSpacesLF::PreStep() {
     * tuples alive in the swarm to the output file
     *
     * isCheckValid becomes true after the number of
-    * live tuples in the swarm becomes atleast 1
+    * live tuples in the swarm becomes at least 1
     */
 void CSwarmSpacesLF::PostStep() {
 	CSpace::TMapPerType& m_cFootbots = GetSpace().GetEntitiesByType("foot-bot");
@@ -111,14 +108,14 @@ void CSwarmSpacesLF::PostStep() {
 	           ++it) {
 	            /* Get handle to foot-bot entity and controller */
 	            CFootBotEntity& cFootBot = *any_cast<CFootBotEntity*>(it->second);
-	            CFootBotForaging& cController = dynamic_cast<CFootBotForaging&>(cFootBot.GetControllableEntity().GetController());
+	            CFootBotDiffusion& cController = dynamic_cast<CFootBotDiffusion&>(cFootBot.GetControllableEntity().GetController());
 	            size_t aliveCount = cController.swarmSpace.size();
 	            tupleCount += aliveCount;
     }
 	if(tupleCount >= 1){
 		isCheckValid = true;
 	}
-	m_cOutput << GetSpace().GetSimulationClock() << "\t"
+	m_cOutFile << GetSpace().GetSimulationClock() << "\t"
 	          << tupleCount << std::endl;
 }
 
@@ -226,10 +223,6 @@ void CSwarmSpacesLF::PlaceUniformly(UInt32 un_robots,
          RAB_RANGE,
          un_data_size);
       AddEntity(*pcFB);
-      /* Add its controller to the list */
-      m_vecControllers.push_back(
-         &dynamic_cast<CBuzzControllerFootBot&>(
-            pcFB->GetControllableEntity().GetController()));
       /* Try to place it in the arena */
       unTrials = 0;
       bool bDone;

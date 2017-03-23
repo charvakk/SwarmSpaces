@@ -3,6 +3,7 @@
 #define SWARMSPACES_LOOP_FUNCTIONS_H
 
 #include <argos/core/simultor/loop_functions.h>
+#include <swarmspaces/swarmtuple.cpp>
 #include <fstream>
 #include <string>
 
@@ -42,6 +43,7 @@ private:
 	bool isCheckValid;
 	size_t tupleCount;
 	std::ofstream m_cOutFile;
+	CSwarmTuple tuple;
 
 };
 
