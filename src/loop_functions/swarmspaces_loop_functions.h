@@ -44,6 +44,7 @@ private:
 	size_t tupleCount;
 	std::ofstream m_cOutFile;
 	CSwarmTuple tuple;
+//	CSpace::TMapPerType& m_cFootbots;
 
 };
 

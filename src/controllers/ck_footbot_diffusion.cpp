@@ -18,10 +18,10 @@
 
 /****************************************/
 /****************************************/
-CSwarmTuple tuple1(1, CVector2(0.0, 0.0), 0.5, "First Tuple!");
-CSwarmTuple tuple2(2, CVector2(1.0, 0.0), 0.5, "Second Tuple!");
-bool needToCreateFirst = true;
-bool needToCreateSecond = true;
+//CSwarmTuple tuple1(1, CVector2(0.0, 0.0), 0.5, "First Tuple!");
+//CSwarmTuple tuple2(2, CVector2(1.0, 0.0), 0.5, "Second Tuple!");
+//bool needToCreateFirst = true;
+//bool needToCreateSecond = true;
 
 CFootBotDiffusion::CFootBotDiffusion() :
 				m_pcWheels(NULL),
@@ -99,7 +99,7 @@ void CFootBotDiffusion::ControlStep() {
 	currentPosition.SetX(positionReading.Position.GetX());
 	currentPosition.SetY(positionReading.Position.GetY());
 
-
+/*
 	if(needToCreateFirst && id == "fb1" && InTupleRange(tuple1)){
 		needToCreateFirst = false;
 		swarmSpace.write(tuple1);
@@ -109,7 +109,7 @@ void CFootBotDiffusion::ControlStep() {
 		needToCreateSecond = false;
 		swarmSpace.write(tuple2);
 		LOG << "second tuple written" << endl;
-	}
+	}*/
 
 
 	// check if you receive anything
@@ -118,8 +118,9 @@ void CFootBotDiffusion::ControlStep() {
 		for(CSwarmTuple tuple : receivedTuples){
 			if(InTupleRange(tuple))
 				swarmSpace.write(tuple);
-			else if(!InTupleRange(tuple) && InPropagationRange(tuple, Rp))
+			else if(InPropagationRange(tuple, Rp))
 				invisibleSpace.write(tuple);
+			else continue;
 		}
 	}catch(int &a){}
 
@@ -132,21 +133,25 @@ void CFootBotDiffusion::ControlStep() {
 	//Check all tuples and delete ones not in range
 	for(CSwarmTuple t : tuples){
 		if(!InTupleRange(t) && InPropagationRange(t, Rp)){
+			swarmSpace.remove(t.getId());
 			invisibleSpace.write(t);
-			swarmSpace.remove(t.getId());
 			LOG << "tuple shifted to second" << endl;
-		}else if(!InPropagationRange(t, Rp)){
+		}
+		if(!InPropagationRange(t, Rp)){
 			swarmSpace.remove(t.getId());
+			invisibleSpace.remove(t.getId());
 			LOG << "tuple deleted" << endl;
 		}
 	}
 	for(CSwarmTuple t : invisibleTuples){
 		if(InTupleRange(t)){
+			invisibleSpace.remove(t.getId());
 			swarmSpace.write(t);
-			invisibleSpace.remove(t.getId());
 			LOG << "tuple shifted to first" << endl;
-		}else if(!InPropagationRange(t, Rp)){
+		}
+		if(!InPropagationRange(t, Rp)){
 			invisibleSpace.remove(t.getId());
+			swarmSpace.remove(t.getId());
 			LOG << "tuple deleted" << endl;
 		}
 	}

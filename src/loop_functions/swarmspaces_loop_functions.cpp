@@ -18,11 +18,11 @@ static const std::string FILE_PREFIX      = "space_";
 static const std::string FB_CONTROLLER    = "fdc";
 static const UInt32      MAX_PLACE_TRIALS = 20;
 //static const UInt32      MAX_ROBOT_TRIALS = 20;
-static const Real        RAB_RANGE        = 3.0f;
+static const Real        RAB_RANGE        = 0.7f;
 //static const Real        SF_RANGE         = RAB_RANGE / Sqrt(2);
 //static const Real        HALF_SF_RANGE    = SF_RANGE * 0.5f;
 static const Real        WALL_THICKNESS   = 0.1;
-static const Real        WALL_HEIGHT      = 2.0;
+static const Real        WALL_HEIGHT      = 0.5;
 
 
 /****************************************/
@@ -33,6 +33,7 @@ CSwarmSpacesLF::CSwarmSpacesLF() :
    isCheckValid(false),
    tuple(1, CVector2(0.0, 0.0), 0.5, "First Tuple!"),
    tupleCount(0){
+//   m_cFootbots(NULL){
 }
 
 /****************************************/
@@ -59,7 +60,12 @@ void CSwarmSpacesLF::Init(TConfigurationNode& t_tree) {
       Real fDensity;
       GetNodeAttribute(t_tree, "density", fDensity);
 
-      PlaceWalls(unRobots, unDataSize, fDensity);
+      bool bWalls;
+      GetNodeAttribute(t_tree, "walls", bWalls);
+      if(bWalls) {
+    	  PlaceWalls(unRobots, unDataSize, fDensity);
+      }
+//      PlaceWalls(unRobots, unDataSize, fDensity);
 
 // Iterates through all the robots and the first one in range of the SwarmTuple spawns it
       CSpace::TMapPerType& m_cFootbots = GetSpace().GetEntitiesByType("foot-bot");
@@ -70,7 +76,7 @@ void CSwarmSpacesLF::Init(TConfigurationNode& t_tree) {
             /* Get handle to foot-bot entity and controller */
             CFootBotEntity& cFootBot = *any_cast<CFootBotEntity*>(it->second);
             CFootBotDiffusion& cController = dynamic_cast<CFootBotDiffusion&>(cFootBot.GetControllableEntity().GetController());
-            if(isSpawned == false){
+            if(!isSpawned){
             	if(cController.InTupleRange(tuple)){
             		cController.GetSwarmSpaces().write(tuple);
             		isSpawned = true;
@@ -103,6 +109,7 @@ void CSwarmSpacesLF::PreStep() {
     */
 void CSwarmSpacesLF::PostStep() {
 	CSpace::TMapPerType& m_cFootbots = GetSpace().GetEntitiesByType("foot-bot");
+	tupleCount = 0;
 	for(CSpace::TMapPerType::iterator it = m_cFootbots.begin();
 	           it != m_cFootbots.end();
 	           ++it) {
