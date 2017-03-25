@@ -12,7 +12,7 @@
 /****************************************/
 /****************************************/
 
-static const std::string FILE_PREFIX      = "space_";
+static const std::string FILE_PREFIX      = "data/SS_";
 //static const Real        FB_RADIUS        = 0.085036758f;
 //static const Real        FB_AREA          = ARGOS_PI * Square(0.085036758f);
 static const std::string FB_CONTROLLER    = "fdc";
