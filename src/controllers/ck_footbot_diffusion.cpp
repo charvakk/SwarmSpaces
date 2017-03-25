@@ -135,24 +135,24 @@ void CFootBotDiffusion::ControlStep() {
 		if(!InTupleRange(t) && InPropagationRange(t, Rp)){
 			swarmSpace.remove(t.getId());
 			invisibleSpace.write(t);
-			LOG << "tuple shifted to second" << endl;
+//			LOG << "tuple shifted to second" << endl;
 		}
 		if(!InPropagationRange(t, Rp)){
 			swarmSpace.remove(t.getId());
 			invisibleSpace.remove(t.getId());
-			LOG << "tuple deleted" << endl;
+//			LOG << "tuple deleted" << endl;
 		}
 	}
 	for(CSwarmTuple t : invisibleTuples){
 		if(InTupleRange(t)){
 			invisibleSpace.remove(t.getId());
 			swarmSpace.write(t);
-			LOG << "tuple shifted to first" << endl;
+//			LOG << "tuple shifted to first" << endl;
 		}
 		if(!InPropagationRange(t, Rp)){
 			invisibleSpace.remove(t.getId());
 			swarmSpace.remove(t.getId());
-			LOG << "tuple deleted" << endl;
+//			LOG << "tuple deleted" << endl;
 		}
 	}
 
@@ -275,7 +275,8 @@ bool CFootBotDiffusion::SendTuplesToRABA(vector<CSwarmTuple> const &tuples, vect
 	byteArray << numberOfTuples;
 
 	if(numberOfTuples > 2){
-		printf("number of tuples sending %zu\n", numberOfTuples);
+//		printf("number of tuples sending %zu\n", numberOfTuples);
+		LOG << "Sending " << numberOfTuples;
 		for(CSwarmTuple tuple : tuples){
 			LOGERR << tuple.getId() << tuple.getVfPosition().GetX() << tuple.getVfPosition().GetY() << tuple.getFRange() << tuple.getSInfo() << endl;
 			LOGERR << "Now invisible" << endl;
@@ -340,9 +341,14 @@ vector<CSwarmTuple> CFootBotDiffusion::GetTuplesFromRABS(){
 	}
 }
 
-SwarmSpaces CFootBotDiffusion::GetSwarmSpaces() const{
+SwarmSpaces& CFootBotDiffusion::GetVisibleSpace(){
 	return swarmSpace;
 }
+
+SwarmSpaces& CFootBotDiffusion::GetInvisibleSpace(){
+	return invisibleSpace;
+}
+
 /****************************************/
 /****************************************/
 

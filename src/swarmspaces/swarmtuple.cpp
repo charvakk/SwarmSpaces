@@ -4,6 +4,7 @@
  */
 
 #include "swarmtuple.h"
+#include <limits>
 
 /*
  * All the ARGoS stuff in the 'argos' namespace.
@@ -15,7 +16,7 @@ using namespace argos;
 CSwarmTuple::CSwarmTuple(){
 	m_iID = 0;
 	m_fRange = 0;
-	m_vfPosition = CVector2(1000.0, 1000.0);
+	m_vfPosition = CVector2(numeric_limits<float>::infinity(), numeric_limits<float>::infinity());
 }
 
 CSwarmTuple::CSwarmTuple(int id, CVector2 position, Real range, string info){

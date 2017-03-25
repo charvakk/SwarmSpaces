@@ -24,6 +24,7 @@ public:
 	virtual bool IsExperimentFinished();
 
 private:
+//	enum TuplePosition{ center = "center", corner = "corner" };
 
 	void PlaceWalls(UInt32 un_robots,
 	                   UInt32 un_data_size,
@@ -36,6 +37,8 @@ private:
 	                 const std::string& str_prefix);
 	void CloseFile(std::ofstream& c_stream);
 
+	void SetCornerPosition(CVector2);
+
 private:
 
 	std::string m_strOutFile;
@@ -44,7 +47,8 @@ private:
 	size_t tupleCount;
 	std::ofstream m_cOutFile;
 	CSwarmTuple tuple;
-//	CSpace::TMapPerType& m_cFootbots;
+	bool isSpawned;
+	CVector2 cornerPosition;
 
 };
 

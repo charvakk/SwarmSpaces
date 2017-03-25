@@ -32,9 +32,9 @@ CSwarmSpacesLF::CSwarmSpacesLF() :
    m_bDone(false),
    isCheckValid(false),
    tuple(1, CVector2(0.0, 0.0), 0.5, "First Tuple!"),
-   tupleCount(0){
-//   m_cFootbots(NULL){
-}
+   tupleCount(0),
+   isSpawned(false),
+   cornerPosition(){}
 
 /****************************************/
 /****************************************/
@@ -65,25 +65,15 @@ void CSwarmSpacesLF::Init(TConfigurationNode& t_tree) {
       if(bWalls) {
     	  PlaceWalls(unRobots, unDataSize, fDensity);
       }
-//      PlaceWalls(unRobots, unDataSize, fDensity);
+      std::string position;
+      GetNodeAttribute(t_tree, "tuple_position", position);
 
-// Iterates through all the robots and the first one in range of the SwarmTuple spawns it
-      CSpace::TMapPerType& m_cFootbots = GetSpace().GetEntitiesByType("foot-bot");
-      bool isSpawned = false;
-      for(CSpace::TMapPerType::iterator it = m_cFootbots.begin();
-           it != m_cFootbots.end();
-           ++it) {
-            /* Get handle to foot-bot entity and controller */
-            CFootBotEntity& cFootBot = *any_cast<CFootBotEntity*>(it->second);
-            CFootBotDiffusion& cController = dynamic_cast<CFootBotDiffusion&>(cFootBot.GetControllableEntity().GetController());
-            if(!isSpawned){
-            	if(cController.InTupleRange(tuple)){
-            		cController.GetSwarmSpaces().write(tuple);
-            		isSpawned = true;
-            		break;
-            	}
-            }
-      }
+      if(position == "center")
+    	  tuple.setVfPosition(CVector2(0.0, 0.0));
+      else if(position == "corner")
+    	  tuple.setVfPosition(cornerPosition);
+      else
+    	  throw CARGoSException("Invalid tuple_position entered: try 'center' or 'corner'.");
       /* Initialize the rest */
       Reset();
    }
@@ -96,7 +86,24 @@ void CSwarmSpacesLF::Init(TConfigurationNode& t_tree) {
 /****************************************/
 
 void CSwarmSpacesLF::PreStep() {
+	// Iterates through all the robots and the first one in range of the SwarmTuple spawns it
+	if(!isSpawned){
+		CSpace::TMapPerType& m_cFootbots = GetSpace().GetEntitiesByType("foot-bot");
 
+		for(CSpace::TMapPerType::iterator it = m_cFootbots.begin();
+				it != m_cFootbots.end();
+				++it) {
+			/* Get handle to foot-bot entity and controller */
+			CFootBotEntity& cFootBot = *any_cast<CFootBotEntity*>(it->second);
+			CFootBotDiffusion& cController = dynamic_cast<CFootBotDiffusion&>(cFootBot.GetControllableEntity().GetController());
+			if(cController.InTupleRange(tuple)){
+				cController.GetVisibleSpace().write(tuple);
+				LOG << "Tuple spawned" << tuple.getSInfo() << std::endl;
+				isSpawned = true;
+				break;
+			}
+		}
+	}
 }
 
 
@@ -110,20 +117,26 @@ void CSwarmSpacesLF::PreStep() {
 void CSwarmSpacesLF::PostStep() {
 	CSpace::TMapPerType& m_cFootbots = GetSpace().GetEntitiesByType("foot-bot");
 	tupleCount = 0;
+	size_t visibleCount = 0;
+	size_t invisibleCount = 0;
 	for(CSpace::TMapPerType::iterator it = m_cFootbots.begin();
 	           it != m_cFootbots.end();
 	           ++it) {
 	            /* Get handle to foot-bot entity and controller */
 	            CFootBotEntity& cFootBot = *any_cast<CFootBotEntity*>(it->second);
 	            CFootBotDiffusion& cController = dynamic_cast<CFootBotDiffusion&>(cFootBot.GetControllableEntity().GetController());
-	            size_t aliveCount = cController.GetSwarmSpaces().size();
+	            size_t numVisible = cController.GetVisibleSpace().size();
+	            size_t numInvisible = cController.GetInvisibleSpace().size();
+	            size_t aliveCount = numVisible + numInvisible;
 	            tupleCount += aliveCount;
+	            visibleCount += numVisible;
+	            invisibleCount += numInvisible;
     }
-	if(tupleCount >= 1){
+	if(!isCheckValid && tupleCount > 0){
 		isCheckValid = true;
 	}
 	m_cOutFile << GetSpace().GetSimulationClock() << "\t"
-	          << tupleCount << std::endl;
+	          << tupleCount << "\t" << visibleCount<< "\t" << invisibleCount << std::endl;
 }
 
 /****************************************/
@@ -148,7 +161,7 @@ void CSwarmSpacesLF::Destroy() {
     */
 
 bool CSwarmSpacesLF::IsExperimentFinished() {
-	if(isCheckValid == true && tupleCount == 0){
+	if((isCheckValid == true && tupleCount == 0) || GetSpace().GetSimulationClock() >= 50000){
 		m_bDone = true;
 	}
 	return m_bDone;
@@ -201,6 +214,7 @@ void CSwarmSpacesLF::PlaceWalls(UInt32 un_robots,
    CRange<Real> cAreaRange(-fArenaSide2, fArenaSide2);
    /* Place robots */
    PlaceUniformly(un_robots, un_data_size, cAreaRange);
+   SetCornerPosition(CVector2(fArenaSide2, -fArenaSide2));
 }
 
 /****************************************/
@@ -271,6 +285,9 @@ void CSwarmSpacesLF::CloseFile(std::ofstream& c_stream) {
    if(c_stream.is_open()) c_stream.close();
 }
 
+void CSwarmSpacesLF::SetCornerPosition(CVector2 position){
+	cornerPosition = position;
+}
 /****************************************/
 /****************************************/
 

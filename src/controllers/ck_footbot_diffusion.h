@@ -75,7 +75,9 @@ public:
 
    bool SendTuplesToRABA(vector<CSwarmTuple> const &tuples, vector<CSwarmTuple> const &invisibleTuples);
 
-   SwarmSpaces GetSwarmSpaces() const;
+   SwarmSpaces& GetVisibleSpace();
+
+   SwarmSpaces& GetInvisibleSpace();
    /*
     * This function resets the controller to its state right after the
     * Init().
