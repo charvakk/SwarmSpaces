@@ -23,26 +23,30 @@ def main():
 	tuplePosition = ['center', 'corner']
 	numOfRobots = [10, 50, 100]
 	density = [2, 0.5, 1]
+	k_Rps = [2, 4, 6]
 
 	for pos in tuplePosition:
 		for num in numOfRobots:
 			for dens in density:
-				RunExperiment(expFile, 10, pos, num, dens)
+				for k in k_Rps:
+					RunExperiment(expFile, 10, pos, num, dens, k)
 
 
-def RunExperiment(expFile, numOfRepetitions, tuplePosition, numOfRobots, density):
+def RunExperiment(expFile, numOfRepetitions, tuplePosition, numOfRobots, density, k_Rp):
 	"""Runs the experiment with the specified parameters for the specified times."""
 	global expNumber
 	expNumber += 1
 	for k in range(0, numOfRepetitions):
 		i = k+1
 		print str(expNumber) + '.' + str(i)
-		exp.set('random_seed', str(i+5))
+		exp.set('random_seed', str(i+27))
 		expName = str(tuplePosition) + '_' + str(numOfRobots) + 'R_' + str(density) + 'D'
-		lf.set('outfile', expName + str(i) + '.dat')
+		# lf.set('outfile', expName + str(i) + '.dat')
+		lf.set('outfile', 'justTheLifetimeWithRp.dat')
 		lf.set('tuple_position', tuplePosition)
 		lf.set('robots', str(numOfRobots))
 		lf.set('density', str(density))
+		lf.set('k_Rp', str(k_Rp))
 
 		tree.write('src/experiments/' + expFile)
 		command = 'argos3 -c src/experiments/' + expFile	

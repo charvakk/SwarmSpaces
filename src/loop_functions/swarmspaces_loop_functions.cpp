@@ -68,6 +68,9 @@ void CSwarmSpacesLF::Init(TConfigurationNode& t_tree) {
       std::string position;
       GetNodeAttribute(t_tree, "tuple_position", position);
 
+      float k_Rp;
+      GetNodeAttribute(t_tree, "k_Rp", k_Rp);
+
       if(position == "center")
     	  tuple.setVfPosition(CVector2(0.0, 0.0));
       else if(position == "corner")
@@ -76,6 +79,18 @@ void CSwarmSpacesLF::Init(TConfigurationNode& t_tree) {
     	  throw CARGoSException("Invalid tuple_position entered: try 'center' or 'corner'.");
       /* Initialize the rest */
       Reset();
+
+      /* Setting Rp for all controllers. */
+      CSpace::TMapPerType& m_cFootbots = GetSpace().GetEntitiesByType("foot-bot");
+      for(CSpace::TMapPerType::iterator it = m_cFootbots.begin();
+	           it != m_cFootbots.end();
+	           ++it) {
+	            /* Get handle to foot-bot entity and controller */
+	            CFootBotEntity& cFootBot = *any_cast<CFootBotEntity*>(it->second);
+	            CFootBotDiffusion& cController = dynamic_cast<CFootBotDiffusion&>(cFootBot.GetControllableEntity().GetController());
+				cController.Rp = k_Rp;
+		}
+      m_cOutFile << unRobots << "\t" << fDensity << "\t" << position << "\t" << k_Rp << "\t";
    }
    catch(CARGoSException& ex) {
       THROW_ARGOSEXCEPTION_NESTED("Error initializing the loop functions", ex);
@@ -135,8 +150,8 @@ void CSwarmSpacesLF::PostStep() {
 	if(!isCheckValid && tupleCount > 0){
 		isCheckValid = true;
 	}
-	m_cOutFile << GetSpace().GetSimulationClock() << "\t"
-	          << tupleCount << "\t" << visibleCount<< "\t" << invisibleCount << std::endl;
+//	m_cOutFile << GetSpace().GetSimulationClock() << "\t"
+//	          << tupleCount << "\t" << visibleCount<< "\t" << invisibleCount << std::endl;
 }
 
 /****************************************/
@@ -150,7 +165,8 @@ void CSwarmSpacesLF::Reset() {
 /****************************************/
 
 void CSwarmSpacesLF::Destroy() {
-   CloseFile(m_cOutFile);
+	m_cOutFile << GetSpace().GetSimulationClock() << std::endl;
+	CloseFile(m_cOutFile);
 }
 
 /**
@@ -272,8 +288,10 @@ void CSwarmSpacesLF::OpenFile(std::ofstream& c_stream,
    std::string strFName = str_prefix + m_strOutFile;
    /* Close file and reopen it */
    CloseFile(c_stream);
+//   c_stream.open(strFName.c_str(),
+//                 std::ofstream::out | std::ofstream::trunc);
    c_stream.open(strFName.c_str(),
-                 std::ofstream::out | std::ofstream::trunc);
+                    std::ofstream::out | std::ofstream::app);
    if(c_stream.fail())
       THROW_ARGOSEXCEPTION("Error opening \"" << strFName << "\": " << strerror(errno));
 }

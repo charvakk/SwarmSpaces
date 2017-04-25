@@ -96,6 +96,7 @@ public:
     */
    virtual void Destroy() {}
 
+  float Rp;
 private:
 
    /* Pointer to the differential steering actuator */
